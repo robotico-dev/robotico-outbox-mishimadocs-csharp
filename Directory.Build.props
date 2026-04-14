@@ -1,0 +1,27 @@
+<Project>
+  <PropertyGroup>
+    <_RoboticoSharedMsbuildImport Condition="Exists('$(MSBuildThisFileDirectory)Robotico.Library.Shared.props')">$(MSBuildThisFileDirectory)Robotico.Library.Shared.props</_RoboticoSharedMsbuildImport>
+    <_RoboticoSharedMsbuildImport Condition="'$(_RoboticoSharedMsbuildImport)' == ''">$([MSBuild]::GetPathOfFileAbove('Robotico.Library.Shared.props', '$(MSBuildThisFileDirectory)'))</_RoboticoSharedMsbuildImport>
+  </PropertyGroup>
+  <Import Project="$(_RoboticoSharedMsbuildImport)" Condition="'$(_RoboticoSharedMsbuildImport)' != ''" />
+
+  <PropertyGroup>
+    <TargetFrameworks>net10.0</TargetFrameworks>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Version>0.1.0</Version>
+    <Product>Robotico.Outbox.Mishima</Product>
+    <PackageId>Robotico.Outbox.Mishima</PackageId>
+    <Title>Robotico.Outbox.Mishima</Title>
+    <Description>IOutbox backed by MishimaDocs. Enqueue writes one JSON document per message; optional IMishimaWriteBatch defers persistence until CommitAsync.</Description>
+    <PackageTags>outbox;mishima;mishimadocs;robotico</PackageTags>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <_RoboticoCsharpNuGetsDir>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\nugets'))</_RoboticoCsharpNuGetsDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="Exists('$(_RoboticoCsharpNuGetsDir)')">
+    <PackageOutputPath>$([MSBuild]::EnsureTrailingSlash('$(_RoboticoCsharpNuGetsDir)'))</PackageOutputPath>
+  </PropertyGroup>
+</Project>
