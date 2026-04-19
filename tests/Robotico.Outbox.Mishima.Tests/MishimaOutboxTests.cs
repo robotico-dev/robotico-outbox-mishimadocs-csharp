@@ -1,6 +1,7 @@
 using System.Text.Json;
 using MishimaDocs;
 using MishimaDocs.IO;
+using Robotico.Result.Errors;
 using Xunit;
 
 namespace Robotico.Outbox.Mishima.Tests;
@@ -20,8 +21,8 @@ public sealed class MishimaOutboxTests
     {
         using IMishimaDatabase db = CreateDatabase();
         string collectionName = "outbox_" + Guid.NewGuid().ToString("N", null);
-        var outbox = new MishimaOutbox(db, null, collectionName);
-        var message = new OutboxTestMessage { Id = 42, Name = "test" };
+        MishimaOutbox outbox = new MishimaOutbox(db, null, collectionName);
+        OutboxTestMessage message = new OutboxTestMessage { Id = 42, Name = "test" };
 
         Robotico.Result.Result result = await outbox.EnqueueAsync(message);
 
@@ -42,7 +43,7 @@ public sealed class MishimaOutboxTests
         using IMishimaDatabase db = CreateDatabase();
         string collectionName = "outbox_batch_" + Guid.NewGuid().ToString("N", null);
         using IMishimaWriteBatch batch = db.BeginWriteBatch();
-        var outbox = new MishimaOutbox(db, batch, collectionName);
+        MishimaOutbox outbox = new MishimaOutbox(db, batch, collectionName);
 
         Robotico.Result.Result enqueue = await outbox.EnqueueAsync(new OutboxTestMessage { Id = 7, Name = "tx" });
         Assert.True(enqueue.IsSuccess());
@@ -57,7 +58,7 @@ public sealed class MishimaOutboxTests
     public async Task CommitAsync_without_batch_returns_success()
     {
         using IMishimaDatabase db = CreateDatabase();
-        var outbox = new MishimaOutbox(db, null, "Outbox");
+        MishimaOutbox outbox = new MishimaOutbox(db, null, "Outbox");
 
         Robotico.Result.Result result = await outbox.CommitAsync();
 
@@ -68,7 +69,7 @@ public sealed class MishimaOutboxTests
     public async Task EnqueueAsync_throws_when_message_null()
     {
         using IMishimaDatabase db = CreateDatabase();
-        var outbox = new MishimaOutbox(db, null, "Outbox");
+        MishimaOutbox outbox = new MishimaOutbox(db, null, "Outbox");
 
         await Assert.ThrowsAsync<ArgumentNullException>(() => outbox.EnqueueAsync(null!));
     }
@@ -77,22 +78,39 @@ public sealed class MishimaOutboxTests
     public async Task EnqueueAsync_throws_when_canceled()
     {
         using IMishimaDatabase db = CreateDatabase();
-        var outbox = new MishimaOutbox(db, null, "Outbox");
-        using var cts = new CancellationTokenSource();
-        await cts.CancelAsync();
+        MishimaOutbox outbox = new MishimaOutbox(db, null, "Outbox");
+        using (CancellationTokenSource cts = new CancellationTokenSource())
+        {
+            await cts.CancelAsync();
 
-        await Assert.ThrowsAsync<OperationCanceledException>(() => outbox.EnqueueAsync(new object(), cts.Token));
+            await Assert.ThrowsAsync<OperationCanceledException>(() => outbox.EnqueueAsync(new object(), cts.Token));
+        }
     }
 
     [Fact]
     public async Task CommitAsync_throws_when_canceled()
     {
         using IMishimaDatabase db = CreateDatabase();
-        var outbox = new MishimaOutbox(db, null, "Outbox");
-        using var cts = new CancellationTokenSource();
-        await cts.CancelAsync();
+        MishimaOutbox outbox = new MishimaOutbox(db, null, "Outbox");
+        using (CancellationTokenSource cts = new CancellationTokenSource())
+        {
+            await cts.CancelAsync();
 
-        await Assert.ThrowsAsync<OperationCanceledException>(() => outbox.CommitAsync(cts.Token));
+            await Assert.ThrowsAsync<OperationCanceledException>(() => outbox.CommitAsync(cts.Token));
+        }
     }
 
+    [Fact]
+    public async Task EnqueueAsync_returns_error_when_serialization_fails()
+    {
+        using IMishimaDatabase db = CreateDatabase();
+        MishimaOutbox outbox = new MishimaOutbox(db, null, "Outbox");
+        CyclicOutboxMessage cyclic = new CyclicOutboxMessage();
+        cyclic.Self = cyclic;
+
+        Robotico.Result.Result result = await outbox.EnqueueAsync(cyclic);
+
+        Assert.True(result.IsError(out IError? err));
+        Assert.IsType<ExceptionError>(err);
+    }
 }

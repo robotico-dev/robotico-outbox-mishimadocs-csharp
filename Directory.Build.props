@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Version>0.1.0</Version>
+    <Version>0.1.1</Version>
     <Product>Robotico.Outbox.Mishima</Product>
     <PackageId>Robotico.Outbox.Mishima</PackageId>
     <Title>Robotico.Outbox.Mishima</Title>
@@ -23,5 +23,10 @@
   </PropertyGroup>
   <PropertyGroup Condition="Exists('$(_RoboticoCsharpNuGetsDir)')">
     <PackageOutputPath>$([MSBuild]::EnsureTrailingSlash('$(_RoboticoCsharpNuGetsDir)'))</PackageOutputPath>
+  </PropertyGroup>
+
+  <!-- MishimaDocs engine: two levels up from this adapter folder → workspace root, then mishima-suite (README layout). -->
+  <PropertyGroup>
+    <MishimaDocsProjectPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\..\mishima-suite\mishima-docs\src\MishimaDocs\MishimaDocs.csproj'))</MishimaDocsProjectPath>
   </PropertyGroup>
 </Project>

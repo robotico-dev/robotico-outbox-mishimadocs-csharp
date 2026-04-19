@@ -1,18 +1,17 @@
 using System.Text.Json;
 using MishimaDocs;
-using Robotico.Outbox;
 using Robotico.Result.Errors;
 
 namespace Robotico.Outbox.Mishima;
 
 /// <summary>
-/// MishimaDocs implementation of <see cref="IOutbox"/> storing one JSON document per enqueued message.
+/// MishimaDocs implementation of <see cref="Robotico.Outbox.IOutbox"/> storing one JSON document per enqueued message.
 /// </summary>
 /// <remarks>
 /// <para>Without a write batch, each enqueue persists immediately via <see cref="IMishimaCollection.Insert"/>; <see cref="CommitAsync"/> returns success without additional work.</para>
 /// <para>With a write batch from <c>IMishimaDatabase.BeginWriteBatch()</c>, enqueue records upserts on that batch; call <see cref="CommitAsync"/> once to persist atomically with other batch operations.</para>
 /// </remarks>
-public sealed class MishimaOutbox : IOutbox
+public sealed class MishimaOutbox : Robotico.Outbox.IOutbox
 {
     private readonly IMishimaDatabase _database;
     private readonly IMishimaWriteBatch? _writeBatch;

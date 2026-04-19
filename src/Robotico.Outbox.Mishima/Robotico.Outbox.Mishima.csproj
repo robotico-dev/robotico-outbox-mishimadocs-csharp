@@ -17,8 +17,11 @@
     <PackageReference Include="Robotico.Outbox" />
     <PackageReference Include="Robotico.Result" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\..\mishima-suite\mishima-docs\src\MishimaDocs\MishimaDocs.csproj" />
+  <ItemGroup Condition="Exists('$(MishimaDocsProjectPath)')">
+    <ProjectReference Include="$(MishimaDocsProjectPath)" />
+  </ItemGroup>
+  <ItemGroup Condition="!Exists('$(MishimaDocsProjectPath)')">
+    <PackageReference Include="MishimaDocs" />
   </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="Robotico.Outbox.Mishima.Tests" />
